@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CYBER SECURITY BREACH</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background-color: #0a0a0a;
+            color: #00ff41;
+            overflow: hidden;
+        }
+        
+        .terminal {
+            background-color: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff41;
+            box-shadow: 0 0 20px #00ff41;
+        }
+        
+        .glitch {
+            text-shadow: 0 0 10px #00ff41;
+            position: relative;
+        }
+        
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .glitch::before {
+            left: 2px;
+            text-shadow: -2px 0 #ff00ff;
+            clip: rect(24px, 550px, 90px, 0);
+            animation: glitch-anim-1 2s infinite linear alternate-reverse;
+        }
+        
+        .glitch::after {
+            left: -2px;
+            text-shadow: -2px 0 #00ffff;
+            clip: rect(85px, 550px, 140px, 0);
+            animation: glitch-anim-2 2s infinite linear alternate-reverse;
+        }
+        
+        @keyframes glitch-anim-1 {
+            0% { clip: rect(32px, 9999px, 28px, 0); }
+            10% { clip: rect(108px, 9999px, 17px, 0); }
+            20% { clip: rect(76px, 9999px, 100px, 0); }
+            30% { clip: rect(91px, 9999px, 85px, 0); }
+            40% { clip: rect(64px, 9999px, 149px, 0); }
+            50% { clip: rect(33px, 9999px, 52px, 0); }
+            60% { clip: rect(147px, 9999px, 124px, 0); }
+            70% { clip: rect(115px, 9999px, 14px, 0); }
+            80% { clip: rect(99px, 9999px, 39px, 0); }
+            90% { clip: rect(119px, 9999px, 137px, 0); }
+            100% { clip: rect(99px, 9999px, 63px, 0); }
+        }
+        
+        @keyframes glitch-anim-2 {
+            0% { clip: rect(129px, 9999px, 36px, 0); }
+            10% { clip: rect(67px, 9999px, 62px, 0); }
+            20% { clip: rect(78px, 9999px, 119px, 0); }
+            30% { clip: rect(103px, 9999px, 80px, 0); }
+            40% { clip: rect(122px, 9999px, 66px, 0); }
+            50% { clip: rect(145px, 9999px, 143px, 0); }
+            60% { clip: rect(121px, 9999px, 148px, 0); }
+            70% { clip: rect(101px, 9999px, 32px, 0); }
+            80% { clip: rect(145px, 9999px, 93px, 0); }
+            90% { clip: rect(74px, 9999px, 103px, 0); }
+            100% { clip: rect(130px, 9999px, 146px, 0); }
+        }
+        
+        .scanline {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(0, 255, 65, 0.1) 0%,
+                rgba(0, 255, 65, 0) 10%
+            );
+            background-size: 100% 8px;
+            animation: scanline 4s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes scanline {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100vh); }
+        }
+        
+        .blink {
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        
+        .password-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #00ff41;
+            font-family: 'Share Tech Mono', monospace;
+            width: 100%;
+        }
+        
+        .access-denied {
+            animation: shake 0.5s;
+            color: #ff0000;
+        }
+        
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+            100% { transform: translateX(0); }
+        }
+        
+        .access-granted {
+            animation: pulse 1s;
+            color: #00ff41;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .progress-bar {
+            height: 4px;
+            background-color: #00ff41;
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body class="h-screen flex items-center justify-center">
+    <div class="scanline"></div>
+    
+    <div class="terminal w-full max-w-4xl h-5/6 mx-4 p-6 rounded-lg relative">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="glitch text-3xl font-bold" data-text="CYBER SECURITY BREACH">CYBER SECURITY BREACH</h1>
+            <div id="timer" class="text-2xl font-bold text-red-500">02:00</div>
+        </div>
+        
+        <div class="mb-6">
+            <div class="flex items-center">
+                <span class="text-green-500 mr-2">root@hacker:~$</span>
+                <span id="status-text" class="blink">Initializing hacking sequence...</span>
+            </div>
+        </div>
+        
+        <div id="terminal-output" class="h-96 overflow-y-auto mb-4 border border-green-900 p-4">
+            <p>> Establishing connection to target system...</p>
+            <p>> Bypassing firewall... <span class="text-green-500">SUCCESS</span></p>
+            <p>> Scanning for vulnerabilities...</p>
+            <p>> Found encrypted password vault</p>
+            <p>> Password length: <span id="pass-length" class="font-bold">8</span> digits</p>
+            <p>> Attempting brute force attack...</p>
+            <p>> <span class="text-yellow-500">WARNING:</span> System will lock after 5 failed attempts</p>
+            <p>> <span class="text-yellow-500">WARNING:</span> Security protocols detected - time limit imposed</p>
+            <div id="clues-container">
+                <!-- Clues will be inserted here -->
+            </div>
+            <p class="mt-4">> Enter password:</p>
+        </div>
+        
+        <div class="flex items-center">
+            <span class="text-green-500 mr-2">root@hacker:~$</span>
+            <input type="text" id="password-input" class="password-input flex-grow" maxlength="10" placeholder="Enter password..." autofocus>
+            <button id="submit-btn" class="ml-2 px-4 py-2 bg-green-900 text-green-100 hover:bg-green-800">
+                <i class="fas fa-terminal"></i> EXECUTE
+            </button>
+        </div>
+        
+        <div class="mt-4 flex justify-between">
+            <div>
+                <span class="text-yellow-500">Attempts:</span> <span id="attempts" class="font-bold">0</span>/5
+            </div>
+            <div>
+                <span class="text-yellow-500">Difficulty:</span> <span id="difficulty" class="font-bold">ELITE</span>
+            </div>
+            <div>
+                <span class="text-yellow-500">Security Level:</span> <span class="font-bold">MAXIMUM</span>
+            </div>
+        </div>
+        
+        <div id="progress-bar" class="progress-bar mt-2"></div>
+        
+        <audio id="typing-sound" src="https://www.soundjay.com/buttons/sounds/button-09.mp3" preload="auto"></audio>
+        <audio id="error-sound" src="https://www.soundjay.com/buttons/sounds/button-10.mp3" preload="auto"></audio>
+        <audio id="success-sound" src="https://www.soundjay.com/buttons/sounds/beep-07.mp3" preload="auto"></audio>
+        <audio id="bg-music" loop>
+            <source src="https://www.soundjay.com/mechanical/sounds/computer-ambience-1.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+    
+    <script>
+        // Game variables
+        let correctPassword = "";
+        let attempts = 0;
+        let timerInterval;
+        let timeLeft = 120; // 2 minutes in seconds
+        let passwordLength = 0;
+        let difficulty = "";
+        
+        // DOM elements
+        const passwordInput = document.getElementById('password-input');
+        const submitBtn = document.getElementById('submit-btn');
+        const terminalOutput = document.getElementById('terminal-output');
+        const statusText = document.getElementById('status-text');
+        const attemptsDisplay = document.getElementById('attempts');
+        const timerDisplay = document.getElementById('timer');
+        const passLengthDisplay = document.getElementById('pass-length');
+        const cluesContainer = document.getElementById('clues-container');
+        const difficultyDisplay = document.getElementById('difficulty');
+        const progressBar = document.getElementById('progress-bar');
+        const typingSound = document.getElementById('typing-sound');
+        const errorSound = document.getElementById('error-sound');
+        const successSound = document.getElementById('success-sound');
+        const bgMusic = document.getElementById('bg-music');
+        
+        // Password generation functions
+        function generateRandomPassword() {
+            // Randomly determine password length (6-10 digits)
+            passwordLength = Math.floor(Math.random() * 5) + 6;
+            passLengthDisplay.textContent = passwordLength;
+            
+            // Set difficulty based on length
+            if (passwordLength <= 7) {
+                difficulty = "MODERATE";
+            } else if (passwordLength <= 9) {
+                difficulty = "HARD";
+            } else {
+                difficulty = "ELITE";
+            }
+            difficultyDisplay.textContent = difficulty;
+            
+            // Generate password with different patterns
+            const pattern = Math.floor(Math.random() * 5);
+            
+            switch(pattern) {
+                case 0: // Random digits with some constraints
+                    return generateRandomDigits();
+                case 1: // Date pattern (YYYYMMDD)
+                    return generateDatePattern();
+                case 2: // Repeating sequence
+                    return generateRepeatingSequence();
+                case 3: // Mathematical pattern
+                    return generateMathPattern();
+                case 4: // Phone number pattern
+                    return generatePhonePattern();
+                default:
+                    return generateRandomDigits();
+            }
+        }
+        
+        function generateRandomDigits() {
+            let password = "";
+            const primes = [2, 3, 5, 7];
+            
+            // First digit is prime
+            password += primes[Math.floor(Math.random() * primes.length)];
+            
+            // Generate remaining digits
+            for (let i = 1; i < passwordLength; i++) {
+                // Avoid consecutive repeats
+                let digit;
+                do {
+                    digit = Math.floor(Math.random() * 10);
+                } while (digit.toString() === password[i-1]);
+                
+                password += digit;
+            }
+            
+            return password;
+        }
+        
+        function generateDatePattern() {
+            // Generate a random date between 1950-2020
+            const year = Math.floor(Math.random() * 71) + 1950;
+            const month = Math.floor(Math.random() * 12) + 1;
+            const day = Math.floor(Math.random() * 28) + 1;
+            
+            let dateStr = year.toString() + 
+                         month.toString().padStart(2, '0') + 
+                         day.toString().padStart(2, '0');
+            
+            // Trim or pad to match password length
+            if (dateStr.length > passwordLength) {
+                dateStr = dateStr.substring(0, passwordLength);
+            } else if (dateStr.length < passwordLength) {
+                dateStr = dateStr.padEnd(passwordLength, Math.floor(Math.random() * 10));
+            }
+            
+            return dateStr;
+        }
+        
+        function generateRepeatingSequence() {
+            const sequences = [
+                "123", "321", "456", "654", "789", "987", 
+                "135", "531", "246", "642", "357", "753"
+            ];
+            
+            const seq = sequences[Math.floor(Math.random() * sequences.length)];
+            let password = "";
+            
+            // Build password by repeating the sequence
+            while (password.length < passwordLength) {
+                password += seq;
+            }
+            
+            // Trim to exact length
+            return password.substring(0, passwordLength);
+        }
+        
+        function generateMathPattern() {
+            let password = "";
+            const start = Math.floor(Math.random() * 5) + 1;
+            const step = Math.floor(Math.random() * 3) + 1;
+            
+            // Create arithmetic sequence
+            for (let i = 0; i < passwordLength; i++) {
+                const digit = (start + i * step) % 10;
+                password += digit;
+            }
+            
+            return password;
+        }
+        
+        function generatePhonePattern() {
+            const areaCodes = ["212", "310", "415", "617", "718", "202", "305", "312"];
+            const exchange = Math.floor(Math.random() * 900) + 100;
+            const lineNum = Math.floor(Math.random() * 9000) + 1000;
+            
+            let phone = areaCodes[Math.floor(Math.random() * areaCodes.length)] + 
+                       exchange.toString() + 
+                       lineNum.toString();
+            
+            // Trim to exact length
+            return phone.substring(0, passwordLength);
+        }
+        
+        // Clue generation functions
+        function generateClues(password) {
+            cluesContainer.innerHTML = "";
+            
+            // Always show password length
+            addClue(`Password length: ${password.length} digits`);
+            
+            // Generate 5-7 random clues
+            const clueCount = Math.floor(Math.random() * 3) + 5;
+            const clueOptions = [
+                () => `First digit is ${password[0]}`,
+                () => `Last digit is ${password[password.length-1]}`,
+                () => `Sum of all digits is ${calculateDigitSum(password)}`,
+                () => `Product of first two digits is ${parseInt(password[0]) * parseInt(password[1])}`,
+                () => `Digit at position ${Math.floor(Math.random() * password.length) + 1} is ${password[Math.floor(Math.random() * password.length)]}`,
+                () => `Contains the sequence '${password.substring(2, 5)}'`,
+                () => `No digit repeats consecutively`,
+                () => `Digits alternate between ${password[0]} and ${password[1]}`,
+                () => `First three digits form ${password.substring(0, 3)}`,
+                () => `Last three digits form ${password.substring(password.length-3)}`,
+                () => `Digits are in ${isAscending(password) ? 'ascending' : 'descending'} order`,
+                () => `Middle digit is ${password[Math.floor(password.length/2)]}`,
+                () => `First digit is a prime number (${[2,3,5,7].includes(parseInt(password[0])) ? 'yes' : 'no'})`,
+                () => `Last digit is twice the first digit (${parseInt(password[password.length-1]) === 2*parseInt(password[0]) ? 'yes' : 'no'})`,
+                () => `Contains exactly ${countEvenDigits(password)} even digits`,
+                () => `All digits add up to a prime number (${isPrime(calculateDigitSum(password)) ? 'yes' : 'no'})`
+            ];
+            
+            // Shuffle clue options and pick the first few
+            const shuffledClues = [...clueOptions].sort(() => 0.5 - Math.random());
+            
+            for (let i = 0; i < clueCount; i++) {
+                const clueFunc = shuffledClues[i];
+                addClue(clueFunc());
+            }
+        }
+        
+        function addClue(text) {
+            const clue = document.createElement('p');
+            clue.innerHTML = `> <span class="text-yellow-500">CLUE:</span> ${text}`;
+            cluesContainer.appendChild(clue);
+        }
+        
+        // Helper functions
+        function calculateDigitSum(str) {
+            return str.split('').reduce((sum, digit) => sum + parseInt(digit), 0);
+        }
+        
+        function isAscending(str) {
+            for (let i = 1; i < str.length; i++) {
+                if (parseInt(str[i]) <= parseInt(str[i-1])) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        function countEvenDigits(str) {
+            return str.split('').filter(d => parseInt(d) % 2 === 0).length;
+        }
+        
+        function isPrime(num) {
+            if (num <= 1) return false;
+            if (num <= 3) return true;
+            if (num % 2 === 0 || num % 3 === 0) return false;
+            for (let i = 5; i * i <= num; i += 6) {
+                if (num % i === 0 || num % (i + 2) === 0) return false;
+            }
+            return true;
+        }
+        
+        // Game functions
+        function initGame() {
+            // Generate new password and clues
+            correctPassword = generateRandomPassword();
+            generateClues(correctPassword);
+            
+            // Start background music
+            bgMusic.volume = 0.3;
+            bgMusic.play().catch(e => console.log("Auto-play prevented:", e));
+            
+            // Start timer
+            startTimer();
+            
+            // Focus input
+            passwordInput.focus();
+            
+            // Event listeners
+            passwordInput.addEventListener('input', playTypingSound);
+            submitBtn.addEventListener('click', checkPassword);
+            passwordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkPassword();
+                }
+            });
+            
+            // Update progress bar on input
+            passwordInput.addEventListener('input', function() {
+                const progress = (passwordInput.value.length / passwordLength) * 100;
+                progressBar.style.width = `${progress}%`;
+                
+                if (passwordInput.value.length === passwordLength) {
+                    progressBar.classList.add('bg-green-500');
+                    progressBar.classList.remove('bg-yellow-500');
+                } else {
+                    progressBar.classList.add('bg-yellow-500');
+                    progressBar.classList.remove('bg-green-500');
+                }
+            });
+        }
+        
+        function startTimer() {
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    gameOver(false);
+                }
+                
+                // Change color when time is running out
+                if (timeLeft <= 30) {
+                    timerDisplay.classList.remove('text-red-500');
+                    timerDisplay.classList.add('text-red-700', 'blink');
+                }
+            }, 1000);
+        }
+        
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        function playTypingSound() {
+            typingSound.currentTime = 0;
+            typingSound.play();
+        }
+        
+        function checkPassword() {
+            const userInput = passwordInput.value.trim();
+            
+            if (!userInput) return;
+            
+            attempts++;
+            attemptsDisplay.textContent = attempts;
+            
+            // Add attempt to terminal
+            addToTerminal(`> Attempt #${attempts}: ${'•'.repeat(userInput.length)}`);
+            
+            if (userInput === correctPassword) {
+                // Correct password
+                successSound.play();
+                statusText.textContent = "ACCESS GRANTED";
+                statusText.classList.remove('blink');
+                statusText.classList.add('access-granted');
+                addToTerminal("> Password verified...", "text-green-500");
+                addToTerminal("> Bypassing final security layer...", "text-green-500");
+                addToTerminal("> Root access achieved!", "text-green-500 font-bold");
+                addToTerminal("> Transferring all data...", "text-green-500");
+                addToTerminal("> Mission accomplished!", "text-green-500 font-bold");
+                passwordInput.disabled = true;
+                submitBtn.disabled = true;
+                clearInterval(timerInterval);
+                
+                // Show celebration after delay
+                setTimeout(() => {
+                    addToTerminal("> System compromised successfully!", "text-green-500 text-xl");
+                }, 1500);
+            } else {
+                // Wrong password
+                errorSound.play();
+                statusText.textContent = "ACCESS DENIED";
+                statusText.classList.remove('blink');
+                statusText.classList.add('access-denied');
+                
+                // Add feedback based on password
+                if (userInput.length !== correctPassword.length) {
+                    addToTerminal("> ERROR: Incorrect password length", "text-red-500");
+                } else {
+                    addToTerminal("> ERROR: Invalid credentials", "text-red-500");
+                    
+                    // Give hints
+                    let hint = "";
+                    if (attempts >= 3) {
+                        const correctDigits = countCorrectDigits(userInput);
+                        hint = `> HINT: ${correctDigits}/${correctPassword.length} digits correct`;
+                    }
+                    if (attempts >= 4) {
+                        hint += ` | First digit: ${correctPassword[0]}`;
+                    }
+                    if (hint) {
+                        addToTerminal(hint, "text-yellow-500");
+                    }
+                }
+                
+                // Reset status text after delay
+                setTimeout(() => {
+                    statusText.classList.remove('access-denied');
+                    statusText.classList.add('blink');
+                    statusText.textContent = "Awaiting input...";
+                }, 1000);
+                
+                passwordInput.value = "";
+                passwordInput.focus();
+                progressBar.style.width = "0%";
+                progressBar.classList.remove('bg-green-500', 'bg-yellow-500');
+                
+                // Check if game over
+                if (attempts >= 5) {
+                    gameOver(true);
+                }
+            }
+        }
+        
+        function countCorrectDigits(input) {
+            let count = 0;
+            for (let i = 0; i < Math.min(input.length, correctPassword.length); i++) {
+                if (input[i] === correctPassword[i]) {
+                    count++;
+                }
+            }
+            return count;
+        }
+        
+        function gameOver(isAttempts) {
+            clearInterval(timerInterval);
+            passwordInput.disabled = true;
+            submitBtn.disabled = true;
+            
+            if (isAttempts) {
+                addToTerminal("> MAXIMUM ATTEMPTS REACHED", "text-red-500 font-bold");
+                addToTerminal("> Security protocols engaged", "text-red-500");
+                addToTerminal("> Initiating system lockdown", "text-red-500");
+                addToTerminal("> Tracing hacker location...", "text-red-500");
+                addToTerminal("> Mission failed!", "text-red-500 text-xl font-bold");
+                addToTerminal(`> Correct password was: ${correctPassword}`, "text-red-500");
+                statusText.textContent = "SYSTEM LOCKED";
+                statusText.classList.remove('blink');
+                statusText.classList.add('access-denied');
+            } else {
+                addToTerminal("> TIME LIMIT EXCEEDED", "text-red-500 font-bold");
+                addToTerminal("> Security team alerted", "text-red-500");
+                addToTerminal("> Mission failed!", "text-red-500 text-xl font-bold");
+                addToTerminal(`> Correct password was: ${correctPassword}`, "text-red-500");
+                statusText.textContent = "TIME EXPIRED";
+                statusText.classList.remove('blink');
+                statusText.classList.add('access-denied');
+            }
+        }
+        
+        function addToTerminal(text, className = "") {
+            const p = document.createElement('p');
+            p.innerHTML = text;
+            if (className) {
+                p.className = className;
+            }
+            terminalOutput.appendChild(p);
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }
+        
+        // Initialize game when page loads
+        window.onload = initGame;
+        
+        // Add restart button functionality
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'r' && (passwordInput.disabled || submitBtn.disabled)) {
+                if (confirm("Restart game?")) {
+                    location.reload();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
