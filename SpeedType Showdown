@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentence Racer Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #111;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        .road {
+            background: repeating-linear-gradient(
+                0deg,
+                #333 0,
+                #333 40px,
+                #555 40px,
+                #555 80px
+            );
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+        }
+        
+        .car {
+            transition: transform 0.1s;
+        }
+        
+        .typing-text {
+            background: rgba(0, 0, 0, 0.7);
+            border: 3px solid #ff0;
+            border-radius: 10px;
+        }
+        
+        .correct {
+            color: #0f0;
+        }
+        
+        .incorrect {
+            color: #f00;
+            text-decoration: underline;
+        }
+        
+        .current {
+            border-bottom: 3px solid #ff0;
+        }
+        
+        .countdown {
+            font-size: 5rem;
+            text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        .nitro {
+            background: linear-gradient(90deg, #ff0, #f80, #f00);
+            animation: nitroFlash 0.5s infinite;
+        }
+        
+        @keyframes nitroFlash {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+        
+        .finish-line {
+            background: repeating-linear-gradient(
+                90deg,
+                #fff 0,
+                #fff 20px,
+                #000 20px,
+                #000 40px
+            );
+            height: 300px;
+            width: 20px;
+            position: absolute;
+            right: 0;
+            top: 0;
+        }
+        
+        .sentence-display {
+            min-height: 80px;
+            line-height: 1.5;
+            word-spacing: 0.3em;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background: #ff0;
+            transition: width 0.3s;
+        }
+        
+        .word-boost {
+            position: absolute;
+            color: #ff0;
+            font-size: 1.2rem;
+            animation: boostFade 1s forwards;
+            pointer-events: none;
+        }
+        
+        @keyframes boostFade {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-30px); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="text-center mb-8">
+        <h1 class="text-4xl md:text-6xl text-yellow-400 mb-4">WORD BOOST RACER</h1>
+        <p class="text-lg text-gray-300">Type each word to boost your car forward!</p>
+    </div>
+
+    <div id="game-container" class="w-full max-w-4xl relative">
+        <div class="road rounded-lg mb-8 relative">
+            <div id="finish-line" class="finish-line hidden"></div>
+            <div id="player-car" class="car absolute bottom-4 left-16 w-20 h-40">
+                <i class="fas fa-car-side text-red-600 text-5xl"></i>
+                <div id="nitro-effect" class="nitro absolute -right-4 top-1/2 w-8 h-4 hidden"></div>
+            </div>
+            <div id="opponent-car" class="car absolute bottom-4 left-16 w-20 h-40 opacity-0">
+                <i class="fas fa-car-side text-blue-500 text-5xl"></i>
+            </div>
+        </div>
+
+        <div id="typing-area" class="typing-text p-6 text-center text-xl hidden">
+            <div id="sentence-display" class="sentence-display mb-4"></div>
+            <div class="progress-bar-container bg-gray-800 rounded-full mb-4">
+                <div id="progress-bar" class="progress-bar rounded-full" style="width: 0%"></div>
+            </div>
+            <input type="text" id="typing-input" class="bg-black text-white border-2 border-yellow-400 rounded px-4 py-2 w-full max-w-md text-center" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+            <div class="mt-4 flex justify-between text-yellow-400">
+                <div>Speed: <span id="speed">0</span> WPM</div>
+                <div>Score: <span id="score">0</span></div>
+                <div>Time: <span id="time">60</span>s</div>
+            </div>
+        </div>
+
+        <div id="start-screen" class="text-center">
+            <button id="start-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-3 px-8 rounded-full text-xl transition-all transform hover:scale-105">
+                START RACE <i class="fas fa-flag-checkered ml-2"></i>
+            </button>
+            <div class="mt-8 text-left max-w-md mx-auto">
+                <h3 class="text-yellow-400 text-xl mb-2">HOW TO PLAY:</h3>
+                <ul class="text-gray-300 text-sm">
+                    <li class="mb-2"><i class="fas fa-car text-red-500 mr-2"></i> Type each word to boost your car forward</li>
+                    <li class="mb-2"><i class="fas fa-bolt text-yellow-400 mr-2"></i> Complete words quickly for bigger boosts</li>
+                    <li class="mb-2"><i class="fas fa-trophy text-yellow-400 mr-2"></i> Reach the finish line before time runs out</li>
+                    <li class="mb-2"><i class="fas fa-keyboard text-white mr-2"></i> Accuracy matters! Mistakes will slow you down</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="countdown" class="countdown absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 hidden">3</div>
+    </div>
+
+    <div id="game-over" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center hidden z-50">
+        <div class="bg-gray-900 p-8 rounded-lg max-w-md text-center border-4 border-yellow-400">
+            <h2 class="text-3xl text-yellow-400 mb-4">RACE COMPLETE!</h2>
+            <div class="text-xl mb-6">
+                <div class="mb-2">Final Score: <span id="final-score" class="text-yellow-400">0</span></div>
+                <div class="mb-2">Words Typed: <span id="words-typed" class="text-yellow-400">0</span></div>
+                <div>Top Speed: <span id="top-speed" class="text-yellow-400">0</span> WPM</div>
+                <div class="mt-4">Accuracy: <span id="accuracy" class="text-yellow-400">0</span>%</div>
+            </div>
+            <button id="restart-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-2 px-6 rounded-full">
+                RACE AGAIN <i class="fas fa-redo ml-2"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        let score = 0;
+        let timeLeft = 60;
+        let gameActive = false;
+        let timer;
+        let wordsTyped = 0;
+        let startTime;
+        let currentSentence = '';
+        let currentPosition = 0;
+        let nitroActive = false;
+        let nitroTimeout;
+        let opponentPosition = 0;
+        let opponentSpeed = 0.3;
+        let opponentInterval;
+        let correctChars = 0;
+        let totalChars = 0;
+        let currentWord = '';
+        let wordStartTime;
+        let lastWordTime = 0;
+        
+        // Sentence bank
+        const sentenceBank = [
+            "The quick brown fox jumps over the lazy dog.",
+            "Pack my box with five dozen liquor jugs.",
+            "How vexingly quick daft zebras jump!",
+            "Bright vixens jump; dozy fowl quack.",
+            "The five boxing wizards jump quickly.",
+            "Crazy Fredrick bought many very exquisite opal jewels.",
+            "We promptly judged antique ivory buckles for the next prize.",
+            "A wizard's job is to vex chumps quickly in fog.",
+            "Watch Jeopardy!, Alex Trebek's fun TV quiz game.",
+            "The jay, pig, fox, zebra, and my wolves quack!",
+            "Sphinx of black quartz, judge my vow.",
+            "Two driven jocks help fax my big quiz.",
+            "Five quacking zephyrs jolt my wax bed.",
+            "The quick onyx goblin jumps over the lazy dwarf.",
+            "How quickly daft jumping zebras vex.",
+            "Bright vixens jump; dozy fowl quack.",
+            "Jinxed wizards pluck ivy from the big quilt.",
+            "Crazy Fredrick bought many very exquisite opal jewels.",
+            "We promptly judged antique ivory buckles for the next prize.",
+            "A wizard's job is to vex chumps quickly in fog."
+        ];
+        
+        // DOM elements
+        const startScreen = document.getElementById('start-screen');
+        const typingArea = document.getElementById('typing-area');
+        const sentenceDisplay = document.getElementById('sentence-display');
+        const progressBar = document.getElementById('progress-bar');
+        const typingInput = document.getElementById('typing-input');
+        const speedDisplay = document.getElementById('speed');
+        const scoreDisplay = document.getElementById('score');
+        const timeDisplay = document.getElementById('time');
+        const startBtn = document.getElementById('start-btn');
+        const countdown = document.getElementById('countdown');
+        const gameOver = document.getElementById('game-over');
+        const finalScore = document.getElementById('final-score');
+        const wordsTypedDisplay = document.getElementById('words-typed');
+        const topSpeedDisplay = document.getElementById('top-speed');
+        const accuracyDisplay = document.getElementById('accuracy');
+        const restartBtn = document.getElementById('restart-btn');
+        const playerCar = document.getElementById('player-car');
+        const opponentCar = document.getElementById('opponent-car');
+        const nitroEffect = document.getElementById('nitro-effect');
+        const finishLine = document.getElementById('finish-line');
+        const gameContainer = document.getElementById('game-container');
+        
+        // Event listeners
+        startBtn.addEventListener('click', startGame);
+        restartBtn.addEventListener('click', startGame);
+        typingInput.addEventListener('input', checkTyping);
+        typingInput.addEventListener('keydown', function(e) {
+            if (e.key === ' ' || e.key === 'Spacebar') {
+                checkWordCompletion();
+            }
+        });
+        
+        // Start the game
+        function startGame() {
+            // Reset game state
+            score = 0;
+            timeLeft = 60;
+            wordsTyped = 0;
+            currentPosition = 0;
+            nitroActive = false;
+            opponentPosition = 0;
+            correctChars = 0;
+            totalChars = 0;
+            currentWord = '';
+            
+            // Update displays
+            scoreDisplay.textContent = score;
+            timeDisplay.textContent = timeLeft;
+            speedDisplay.textContent = '0';
+            progressBar.style.width = '0%';
+            
+            // Hide screens
+            startScreen.classList.add('hidden');
+            gameOver.classList.add('hidden');
+            
+            // Show countdown
+            countdown.classList.remove('hidden');
+            let count = 3;
+            countdown.textContent = count;
+            
+            const countdownInterval = setInterval(() => {
+                count--;
+                countdown.textContent = count;
+                
+                if (count <= 0) {
+                    clearInterval(countdownInterval);
+                    countdown.classList.add('hidden');
+                    startRace();
+                }
+            }, 1000);
+            
+            // Reset car positions
+            playerCar.style.transform = 'translateX(0)';
+            opponentCar.style.transform = 'translateX(0)';
+            opponentCar.classList.remove('opacity-0');
+            
+            // Show finish line at 90% of road width
+            const roadWidth = document.querySelector('.road').offsetWidth;
+            finishLine.style.left = (roadWidth * 0.9) + 'px';
+            finishLine.classList.remove('hidden');
+        }
+        
+        function startRace() {
+            gameActive = true;
+            typingArea.classList.remove('hidden');
+            typingInput.focus();
+            
+            // Start timer
+            timer = setInterval(updateTimer, 1000);
+            
+            // Start opponent car movement
+            opponentInterval = setInterval(moveOpponent, 100);
+            
+            // Set start time for WPM calculation
+            startTime = new Date().getTime();
+            wordStartTime = startTime;
+            
+            // Get first sentence
+            getNewSentence();
+        }
+        
+        function updateTimer() {
+            timeLeft--;
+            timeDisplay.textContent = timeLeft;
+            
+            if (timeLeft <= 0) {
+                endGame();
+            }
+        }
+        
+        function getNewSentence() {
+            // Get random sentence from bank
+            currentSentence = sentenceBank[Math.floor(Math.random() * sentenceBank.length)];
+            currentPosition = 0;
+            currentWord = '';
+            
+            // Display sentence with styling
+            sentenceDisplay.innerHTML = '';
+            for (let i = 0; i < currentSentence.length; i++) {
+                const span = document.createElement('span');
+                span.textContent = currentSentence[i];
+                if (i === 0) span.className = 'current';
+                sentenceDisplay.appendChild(span);
+            }
+            
+            // Clear input
+            typingInput.value = '';
+            
+            // Update progress bar
+            updateProgressBar();
+        }
+        
+        function checkTyping() {
+            if (!gameActive) return;
+            
+            const input = typingInput.value;
+            totalChars++;
+            
+            // Check if current character matches
+            if (input[currentPosition] === currentSentence[currentPosition]) {
+                // Update sentence display
+                const spans = sentenceDisplay.querySelectorAll('span');
+                spans[currentPosition].className = 'correct';
+                
+                if (currentPosition < currentSentence.length - 1) {
+                    spans[currentPosition + 1].className = 'current';
+                }
+                
+                currentPosition++;
+                correctChars++;
+                
+                // Add to current word
+                currentWord += input[currentPosition - 1];
+                
+                // If sentence is complete
+                if (currentPosition === currentSentence.length) {
+                    completeSentence();
+                }
+            } else {
+                // Mark incorrect
+                if (input.length > currentPosition) {
+                    const spans = sentenceDisplay.querySelectorAll('span');
+                    spans[currentPosition].className = 'incorrect';
+                }
+            }
+            
+            // Update progress bar
+            updateProgressBar();
+            
+            // Calculate and display typing speed
+            updateTypingSpeed();
+        }
+        
+        function checkWordCompletion() {
+            if (!gameActive || currentWord.trim() === '') return;
+            
+            const now = new Date().getTime();
+            const wordTime = now - wordStartTime;
+            lastWordTime = wordTime;
+            
+            // Calculate boost based on typing speed (faster = bigger boost)
+            const speedFactor = Math.max(0.5, Math.min(2, 1000 / (wordTime / currentWord.length)));
+            const boostAmount = currentWord.length * speedFactor;
+            
+            // Move car
+            movePlayerCar(boostAmount);
+            
+            // Show boost effect
+            showBoostEffect(boostAmount);
+            
+            // Update score
+            score += Math.floor(boostAmount);
+            scoreDisplay.textContent = score;
+            
+            // Count word
+            wordsTyped++;
+            
+            // Reset for next word
+            currentWord = '';
+            wordStartTime = now;
+        }
+        
+        function showBoostEffect(boostAmount) {
+            const boostElement = document.createElement('div');
+            boostElement.className = 'word-boost';
+            boostElement.textContent = `+${Math.floor(boostAmount)}`;
+            
+            // Position near the car
+            const carRect = playerCar.getBoundingClientRect();
+            const containerRect = gameContainer.getBoundingClientRect();
+            
+            boostElement.style.left = `${carRect.left - containerRect.left + 30}px`;
+            boostElement.style.top = `${carRect.top - containerRect.top - 20}px`;
+            
+            gameContainer.appendChild(boostElement);
+            
+            // Remove after animation
+            setTimeout(() => {
+                boostElement.remove();
+            }, 1000);
+        }
+        
+        function updateProgressBar() {
+            const progress = (currentPosition / currentSentence.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+        
+        function completeSentence() {
+            // Complete the last word if any
+            if (currentWord.trim() !== '') {
+                checkWordCompletion();
+            }
+            
+            // Get new sentence
+            getNewSentence();
+        }
+        
+        function movePlayerCar(boostAmount) {
+            // Get current position
+            const currentX = parseFloat(playerCar.style.transform.replace('translateX(', '').replace('px)', '')) || 0;
+            const newX = currentX + (nitroActive ? boostAmount * 1.5 : boostAmount);
+            
+            // Update position
+            playerCar.style.transform = `translateX(${newX}px)`;
+            currentPosition = newX;
+            
+            // Check if player reached finish line
+            const roadWidth = document.querySelector('.road').offsetWidth;
+            if (newX >= roadWidth * 0.9 - 50) {
+                winGame();
+            }
+            
+            // Activate nitro for very fast typing
+            if (lastWordTime > 0 && (currentWord.length / (lastWordTime / 1000)) > 15) {
+                activateNitro();
+            }
+        }
+        
+        function moveOpponent() {
+            // Randomly adjust opponent speed
+            if (Math.random() < 0.1) {
+                opponentSpeed = 0.2 + Math.random() * 0.4;
+            }
+            
+            const currentX = parseFloat(opponentCar.style.transform.replace('translateX(', '').replace('px)', '')) || 0;
+            const newX = currentX + opponentSpeed;
+            
+            opponentCar.style.transform = `translateX(${newX}px)`;
+            opponentPosition = newX;
+            
+            // Check if opponent reached finish line
+            const roadWidth = document.querySelector('.road').offsetWidth;
+            if (newX >= roadWidth * 0.9 - 50 && gameActive) {
+                endGame(false);
+            }
+        }
+        
+        function activateNitro() {
+            nitroActive = true;
+            nitroEffect.classList.remove('hidden');
+            
+            // Clear any existing timeout
+            if (nitroTimeout) clearTimeout(nitroTimeout);
+            
+            // Deactivate nitro after 2 seconds
+            nitroTimeout = setTimeout(() => {
+                nitroActive = false;
+                nitroEffect.classList.add('hidden');
+            }, 2000);
+        }
+        
+        function updateTypingSpeed() {
+            if (!startTime) return;
+            
+            const currentTime = new Date().getTime();
+            const elapsedMinutes = (currentTime - startTime) / 60000;
+            const wpm = Math.round((correctChars / 5) / elapsedMinutes) || 0;
+            
+            speedDisplay.textContent = wpm;
+        }
+        
+        function calculateAccuracy() {
+            return totalChars > 0 ? Math.round((correctChars / totalChars) * 100) : 0;
+        }
+        
+        function winGame() {
+            endGame(true);
+            finalScore.textContent = score + 200; // Bonus for winning
+            document.querySelector('#game-over h2').textContent = "YOU WIN!";
+        }
+        
+        function endGame(won = false) {
+            gameActive = false;
+            
+            clearInterval(timer);
+            clearInterval(opponentInterval);
+            
+            if (!won) {
+                finalScore.textContent = score;
+                document.querySelector('#game-over h2').textContent = "GAME OVER";
+            }
+            
+            wordsTypedDisplay.textContent = wordsTyped;
+            
+            // Calculate final WPM
+            const currentTime = new Date().getTime();
+            const elapsedMinutes = (currentTime - startTime) / 60000;
+            const wpm = Math.round((correctChars / 5) / elapsedMinutes) || 0;
+            topSpeedDisplay.textContent = wpm;
+            
+            // Calculate accuracy
+            accuracyDisplay.textContent = calculateAccuracy();
+            
+            // Show game over screen
+            gameOver.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
