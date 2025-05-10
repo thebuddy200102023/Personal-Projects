@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dino Ball Catcher</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes dinoWalk {
+            0% { background-position: 0px; }
+            100% { background-position: -192px; }
+        }
+        
+        @keyframes dinoStand {
+            0% { background-position: -192px; }
+            100% { background-position: -384px; }
+        }
+        
+        .dino {
+            width: 48px;
+            height: 48px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 48"><rect x="0" y="0" width="48" height="48" fill="%234CAF50"/><rect x="48" y="0" width="48" height="48" fill="%238BC34A"/><rect x="96" y="0" width="48" height="48" fill="%234CAF50"/><rect x="144" y="0" width="48" height="48" fill="%238BC34A"/></svg>');
+            animation: dinoWalk 0.6s steps(4) infinite;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .dino.standing {
+            animation: dinoStand 0.8s steps(4) infinite;
+        }
+        
+        .ball {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            position: absolute;
+        }
+        
+        .game-container {
+            position: relative;
+            width: 400px;
+            height: 500px;
+            background-color: #f0f9ff;
+            overflow: hidden;
+            border: 4px solid #0ea5e9;
+            border-radius: 8px;
+        }
+        
+        .ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 20px;
+            background-color: #a16207;
+        }
+        
+        .cloud {
+            position: absolute;
+            width: 60px;
+            height: 20px;
+            background-color: white;
+            border-radius: 20px;
+            opacity: 0.8;
+        }
+        
+        .hit-area {
+            position: absolute;
+            width: 60px;
+            height: 20px;
+            top: -10px;
+            left: -6px;
+            /* background-color: rgba(255,0,0,0.3); */ /* Uncomment to see hit area */
+        }
+    </style>
+</head>
+<body class="bg-blue-50 min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="text-center mb-6">
+        <h1 class="text-4xl font-bold text-blue-600 mb-2">Dino Ball Catcher</h1>
+        <p class="text-gray-600">Help the dinosaur catch as many balls as possible!</p>
+    </div>
+    
+    <div class="game-container shadow-xl mb-4">
+        <div class="ground"></div>
+        <div class="dino">
+            <div class="hit-area"></div>
+        </div>
+    </div>
+    
+    <div class="flex justify-between w-full max-w-md mb-6">
+        <div class="bg-white p-4 rounded-lg shadow-md text-center">
+            <p class="text-sm text-gray-500">Score</p>
+            <p class="text-2xl font-bold" id="score">0</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-md text-center">
+            <p class="text-sm text-gray-500">Level</p>
+            <p class="text-2xl font-bold" id="level">1</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-md text-center">
+            <p class="text-sm text-gray-500">Lives</p>
+            <p class="text-2xl font-bold" id="lives">3</p>
+        </div>
+    </div>
+    
+    <div class="flex space-x-4">
+        <button id="startBtn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full transition">
+            Start Game
+        </button>
+        <button id="resetBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full transition">
+            Reset
+        </button>
+    </div>
+    
+    <div class="mt-8 bg-white p-4 rounded-lg shadow-md max-w-md">
+        <h2 class="text-xl font-bold text-blue-600 mb-2">How to Play</h2>
+        <ul class="list-disc pl-5 text-gray-700">
+            <li>Use <span class="font-bold">Left</span> and <span class="font-bold">Right</span> arrow keys to move the dinosaur</li>
+            <li>Catch the falling balls to earn points</li>
+            <li>Each level increases the ball speed</li>
+            <li>You have 3 lives - miss 3 balls and game over!</li>
+        </ul>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const gameContainer = document.querySelector('.game-container');
+            const dino = document.querySelector('.dino');
+            const hitArea = document.querySelector('.hit-area');
+            const scoreDisplay = document.getElementById('score');
+            const levelDisplay = document.getElementById('level');
+            const livesDisplay = document.getElementById('lives');
+            const startBtn = document.getElementById('startBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            
+            let score = 0;
+            let level = 1;
+            let lives = 3;
+            let gameRunning = false;
+            let dinoX = gameContainer.offsetWidth / 2 - 24;
+            let dinoSpeed = 12; // Increased speed
+            let ballSpeed = 3;
+            let ballInterval = 1500;
+            let gameInterval;
+            let ballCreationInterval;
+            let clouds = [];
+            let keysPressed = {};
+            
+            // Create some decorative clouds
+            for (let i = 0; i < 5; i++) {
+                const cloud = document.createElement('div');
+                cloud.className = 'cloud';
+                cloud.style.left = `${Math.random() * (gameContainer.offsetWidth - 60)}px`;
+                cloud.style.top = `${20 + Math.random() * 100}px`;
+                gameContainer.appendChild(cloud);
+                clouds.push(cloud);
+            }
+            
+            // Move clouds slowly
+            setInterval(() => {
+                clouds.forEach(cloud => {
+                    let currentLeft = parseFloat(cloud.style.left);
+                    currentLeft += 0.2;
+                    if (currentLeft > gameContainer.offsetWidth) {
+                        currentLeft = -60;
+                    }
+                    cloud.style.left = `${currentLeft}px`;
+                });
+            }, 50);
+            
+            // Handle keyboard controls
+            document.addEventListener('keydown', (e) => {
+                keysPressed[e.key] = true;
+                
+                if (e.key === 'ArrowRight') {
+                    dino.style.transform = 'translateX(-50%) scaleX(1)';
+                    dino.classList.remove('standing');
+                } else if (e.key === 'ArrowLeft') {
+                    dino.style.transform = 'translateX(-50%) scaleX(-1)';
+                    dino.classList.remove('standing');
+                }
+            });
+            
+            document.addEventListener('keyup', (e) => {
+                keysPressed[e.key] = false;
+                
+                // Check if both keys are released
+                if (!keysPressed['ArrowLeft'] && !keysPressed['ArrowRight']) {
+                    dino.classList.add('standing');
+                }
+            });
+            
+            // Game loop for smooth movement
+            function gameLoop() {
+                if (!gameRunning) return;
+                
+                if (keysPressed['ArrowRight']) {
+                    dinoX = Math.min(dinoX + dinoSpeed, gameContainer.offsetWidth - 48);
+                } 
+                if (keysPressed['ArrowLeft']) {
+                    dinoX = Math.max(dinoX - dinoSpeed, 0);
+                }
+                
+                dino.style.left = `${dinoX}px`;
+                requestAnimationFrame(gameLoop);
+            }
+            
+            // Create a new ball
+            function createBall() {
+                if (!gameRunning) return;
+                
+                const ball = document.createElement('div');
+                ball.className = 'ball';
+                
+                // Random color for the ball
+                const colors = ['#FF5252', '#FFEB3B', '#4CAF50', '#2196F3', '#9C27B0'];
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                ball.style.backgroundColor = randomColor;
+                
+                // Random position at top
+                const left = Math.random() * (gameContainer.offsetWidth - 24);
+                ball.style.left = `${left}px`;
+                ball.style.top = '0px';
+                
+                gameContainer.appendChild(ball);
+                
+                // Move ball down
+                let ballY = 0;
+                const ballId = setInterval(() => {
+                    if (!gameRunning) {
+                        clearInterval(ballId);
+                        return;
+                    }
+                    
+                    ballY += ballSpeed;
+                    ball.style.top = `${ballY}px`;
+                    
+                    // Get positions for collision detection
+                    const ballRect = ball.getBoundingClientRect();
+                    const hitAreaRect = hitArea.getBoundingClientRect();
+                    
+                    // Improved collision detection
+                    if (ballRect.bottom >= hitAreaRect.top && 
+                        ballRect.top <= hitAreaRect.bottom &&
+                        ballRect.right >= hitAreaRect.left && 
+                        ballRect.left <= hitAreaRect.right) {
+                        
+                        // Ball caught!
+                        gameContainer.removeChild(ball);
+                        clearInterval(ballId);
+                        score += level * 10;
+                        scoreDisplay.textContent = score;
+                        
+                        // Check for level up
+                        if (score >= level * 100) {
+                            levelUp();
+                        }
+                        
+                        // Play catch sound
+                        playSound('catch');
+                    }
+                    
+                    // Check if ball missed
+                    if (ballY >= gameContainer.offsetHeight - 20) {
+                        gameContainer.removeChild(ball);
+                        clearInterval(ballId);
+                        lives--;
+                        livesDisplay.textContent = lives;
+                        
+                        if (lives <= 0) {
+                            gameOver();
+                        }
+                        
+                        // Play miss sound
+                        playSound('miss');
+                    }
+                }, 16); // Faster update for smoother movement
+            }
+            
+            function levelUp() {
+                level++;
+                levelDisplay.textContent = level;
+                ballSpeed += 0.5;
+                ballInterval = Math.max(500, ballInterval - 200);
+                
+                // Clear existing interval and set new one
+                clearInterval(ballCreationInterval);
+                ballCreationInterval = setInterval(createBall, ballInterval);
+                
+                // Flash level up message
+                const levelUpMsg = document.createElement('div');
+                levelUpMsg.className = 'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400 text-white font-bold p-2 rounded-lg';
+                levelUpMsg.textContent = `LEVEL ${level}!`;
+                gameContainer.appendChild(levelUpMsg);
+                
+                setTimeout(() => {
+                    gameContainer.removeChild(levelUpMsg);
+                }, 1000);
+                
+                playSound('level');
+            }
+            
+            function gameOver() {
+                gameRunning = false;
+                clearInterval(gameInterval);
+                clearInterval(ballCreationInterval);
+                
+                const gameOverMsg = document.createElement('div');
+                gameOverMsg.className = 'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-red-500 text-white font-bold p-4 rounded-lg text-center';
+                gameOverMsg.innerHTML = `
+                    <p class="text-2xl mb-2">GAME OVER</p>
+                    <p class="mb-2">Final Score: ${score}</p>
+                    <p>Level Reached: ${level}</p>
+                `;
+                gameContainer.appendChild(gameOverMsg);
+                
+                playSound('gameover');
+            }
+            
+            function playSound(type) {
+                const sounds = {
+                    catch: { frequency: 523.25, type: 'sine', duration: 0.1 },
+                    miss: { frequency: 220, type: 'sine', duration: 0.3 },
+                    level: { frequency: 1046.5, type: 'square', duration: 0.5 },
+                    gameover: { frequency: 110, type: 'sawtooth', duration: 1 }
+                };
+                
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.type = sounds[type].type;
+                oscillator.frequency.value = sounds[type].frequency;
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + sounds[type].duration);
+                
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + sounds[type].duration);
+            }
+            
+            function startGame() {
+                if (gameRunning) return;
+                
+                // Reset game state
+                score = 0;
+                level = 1;
+                lives = 3;
+                ballSpeed = 3;
+                ballInterval = 1000;
+                
+                scoreDisplay.textContent = score;
+                levelDisplay.textContent = level;
+                livesDisplay.textContent = lives;
+                
+                // Remove any existing balls
+                document.querySelectorAll('.ball').forEach(ball => ball.remove());
+                
+                // Remove game over message if exists
+                const gameOverMsg = document.querySelector('.bg-red-500');
+                if (gameOverMsg) gameContainer.removeChild(gameOverMsg);
+                
+                // Position dino at center
+                dinoX = gameContainer.offsetWidth / 2 - 24;
+                dino.style.left = `${dinoX}px`;
+                dino.classList.remove('standing');
+                
+                gameRunning = true;
+                
+                // Start creating balls
+                ballCreationInterval = setInterval(createBall, ballInterval);
+                
+                // Start game loop
+                requestAnimationFrame(gameLoop);
+            }
+            
+            function resetGame() {
+                gameRunning = false;
+                
+                score = 0;
+                level = 1;
+                lives = 3;
+                
+                scoreDisplay.textContent = score;
+                levelDisplay.textContent = level;
+                livesDisplay.textContent = lives;
+                
+                document.querySelectorAll('.ball').forEach(ball => ball.remove());
+                const gameOverMsg = document.querySelector('.bg-red-500');
+                if (gameOverMsg) gameContainer.removeChild(gameOverMsg);
+                
+                dinoX = gameContainer.offsetWidth / 2 - 24;
+                dino.style.left = `${dinoX}px`;
+                dino.classList.remove('standing');
+            }
+            
+            startBtn.addEventListener('click', startGame);
+            resetBtn.addEventListener('click', resetGame);
+        });
+    </script>
+</body>
+</html>
